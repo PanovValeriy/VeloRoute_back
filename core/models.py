@@ -115,3 +115,17 @@ class Report(models.Model):
         ordering = ('-date',)
         verbose_name = 'Отчет'
         verbose_name_plural = 'Отчеты'
+
+
+class VisitCount(models.Model):
+    date = models.DateField(verbose_name='Дата')
+    ip = models.IntegerField(verbose_name='ip-адрес')
+    count = models.IntegerField(verbose_name='Количество')
+
+    def __str__(self):
+        return '{} - {} - {}'.format(self.date, self.ip, self.count)
+
+    class Meta:
+        ordering = ('-date',)
+        verbose_name = 'Посещение'
+        verbose_name_plural = 'Посещения'

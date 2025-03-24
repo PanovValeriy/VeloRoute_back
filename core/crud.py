@@ -1,8 +1,10 @@
+import datetime
 import operator
 
 from django.db.models import Q
 
-from core.models import Route, Report, Event
+from core.libs import ip2int
+from core.models import Route, Report, Event, VisitCount
 
 
 def readRouteList(search='', length=''):
@@ -62,3 +64,13 @@ def readEvent(id):
     except:
         result = None
     return result
+
+
+def addVisit(ip):
+    try:
+        recVisitCount = VisitCount.objects.filter(date=datetime.date.today(), ip=ip2int(ip))[0]
+        recVisitCount.count += 1
+        recVisitCount.save()
+    except:
+        recVisitCount = VisitCount(ip=ip2int(ip), date=datetime.date.today(), count=1)
+        recVisitCount.save()
