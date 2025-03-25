@@ -65,6 +65,8 @@ class Route(models.Model):
     jungle = models.IntegerField(verbose_name='Дебри')
     complexity = models.ForeignKey(Complexity, on_delete=models.PROTECT, verbose_name='Сложность маршрута')
     description = models.TextField(verbose_name='Подробное описание')
+    dateCreate = models.DateField(verbose_name='Дата создания маршрута')
+    dateUpdate = models.DateField(verbose_name='Дата обновления маршрута')
 
     def __str__(self):
         return self.name
@@ -89,6 +91,8 @@ class Event(models.Model):
     complexity = models.ForeignKey(Complexity, on_delete=models.PROTECT, verbose_name='Сложность маршрута')
     photoURL = models.TextField(default='', verbose_name='Ссылка на фотографию')
     description = models.TextField(verbose_name='Подробное описание')
+    dateCreate = models.DateField(verbose_name='Дата создания события')
+    dateUpdate = models.DateField(verbose_name='Дата обновления события')
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.startDateTime.date())
@@ -107,6 +111,8 @@ class Report(models.Model):
     event = models.ForeignKey(Event, on_delete=models.PROTECT, null=True, blank=True, verbose_name='Событие')
     photoURL = models.TextField(verbose_name='Ссылка на фотографию')
     body = models.TextField(verbose_name='Содержимое отчета')
+    dateCreate = models.DateField(verbose_name='Дата создания отчета')
+    dateUpdate = models.DateField(verbose_name='Дата обновления отчета')
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.date)
