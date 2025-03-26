@@ -1,7 +1,7 @@
 def ip2int(ip_str):
     ip_int = 0
+    ip_arr = list(map(int, ip_str.split('.')))
     for i in range(4):
-        ip_arr = list(map(int, ip_str.split('.')))
         ip_int += 256 ** i * ip_arr[3 - i]
     return ip_int
 

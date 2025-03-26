@@ -125,7 +125,7 @@ class Report(models.Model):
 
 class VisitCount(models.Model):
     date = models.DateField(verbose_name='Дата')
-    ip = models.IntegerField(verbose_name='ip-адрес')
+    ip = models.PositiveBigIntegerField(verbose_name='ip-адрес')
     count = models.IntegerField(verbose_name='Количество')
 
     def __str__(self):
