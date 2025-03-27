@@ -1,5 +1,7 @@
 from django.db import models
 
+from core.constants import STATUS_LIST
+
 
 class TypeEvent(models.Model):
     name = models.CharField(max_length=25, verbose_name='Название')
@@ -70,7 +72,7 @@ class Route(models.Model):
     status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус маршрута')
 
     def __str__(self):
-        return '{}: {}'.format(self.id, self.name)
+        return '{}: {} ({})'.format(self.id, self.name, STATUS_LIST[self.status])
 
     class Meta:
         ordering = ('name',)
@@ -97,7 +99,7 @@ class Event(models.Model):
     status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус события')
 
     def __str__(self):
-        return '{}: {} ({})'.format(self.id, self.name, self.startDateTime.date())
+        return '{}: {} ({}) ({})'.format(self.id, self.name, self.startDateTime.date(), STATUS_LIST[self.status])
 
     class Meta:
         ordering = ('-startDateTime',)
@@ -118,7 +120,7 @@ class Report(models.Model):
     status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус отчета')
 
     def __str__(self):
-        return '{}: {} ({})'.format(self.id, self.name, self.date)
+        return '{}: {} ({}) ({})'.format(self.id, self.name, self.date, STATUS_LIST[self.status])
 
     class Meta:
         ordering = ('-date',)
