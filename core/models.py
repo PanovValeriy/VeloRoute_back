@@ -67,9 +67,10 @@ class Route(models.Model):
     description = models.TextField(verbose_name='Подробное описание')
     dateCreate = models.DateField(verbose_name='Дата создания маршрута')
     dateUpdate = models.DateField(verbose_name='Дата обновления маршрута')
+    status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус маршрута')
 
     def __str__(self):
-        return self.name
+        return '{}: {}'.format(self.id, self.name)
 
     class Meta:
         ordering = ('name',)
@@ -93,9 +94,10 @@ class Event(models.Model):
     description = models.TextField(verbose_name='Подробное описание')
     dateCreate = models.DateField(verbose_name='Дата создания события')
     dateUpdate = models.DateField(verbose_name='Дата обновления события')
+    status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус события')
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.startDateTime.date())
+        return '{}: {} ({})'.format(self.id, self.name, self.startDateTime.date())
 
     class Meta:
         ordering = ('-startDateTime',)
@@ -113,9 +115,10 @@ class Report(models.Model):
     body = models.TextField(verbose_name='Содержимое отчета')
     dateCreate = models.DateField(verbose_name='Дата создания отчета')
     dateUpdate = models.DateField(verbose_name='Дата обновления отчета')
+    status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус отчета')
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.date)
+        return '{}: {} ({})'.format(self.id, self.name, self.date)
 
     class Meta:
         ordering = ('-date',)

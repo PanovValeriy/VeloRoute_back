@@ -8,7 +8,7 @@ from core.models import Route, Report, Event, VisitCount
 
 
 def readRouteList(search='', length=''):
-    q = Q()
+    q = Q(status=2)
     if search != '':
         q &= operator.or_(operator.or_(Q(name__icontains=search), Q(description__icontains=search)), Q(pointList__icontains=search))
     lengthInt = 0
@@ -35,32 +35,40 @@ def readRouteList(search='', length=''):
 def readRoute(id):
     try:
         result = Route.objects.get(pk=id)
+        if result.status == 0:
+            result = None
     except:
         result = None
     return result
 
 
 def readReportList():
-    result = Report.objects.all()
+    q = Q(status=2)
+    result = Report.objects.filter(q)
     return result
 
 
 def readReport(id):
     try:
         result = Report.objects.get(pk=id)
+        if result.status == 0:
+            result = None
     except:
         result = None
     return result
 
 
 def readEventList():
-    result = Event.objects.all()
+    q = Q(status=2)
+    result = Event.objects.filter(q)
     return result
 
 
 def readEvent(id):
     try:
         result = Event.objects.get(pk=id)
+        if result.status == 0:
+            result = None
     except:
         result = None
     return result
