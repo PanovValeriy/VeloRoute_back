@@ -14,9 +14,11 @@ def routes(request):
 def view_route_list(request):
     search = request.GET.get('search', '')
     length = request.GET.get('length', '')
+    complexity = int(request.GET.get('complexity', '0'))
+    sort = request.GET.get('sort', '')
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 0))
-    routeList = readRouteList(search, length)
+    routeList = readRouteList(search, length, complexity, sort)
     recCount = routeList.count()
     startRec = 0
     endRec = recCount

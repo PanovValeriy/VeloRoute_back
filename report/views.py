@@ -9,8 +9,22 @@ from core.serializers import ReportListSerializer, ReportSerializer
 
 @api_view(['GET'])
 def view_report_list(request):
-    reportList = readReportList()
-    responseReportList = ReportListSerializer(reportList, many=True).data
+    search = request.GET.get('search', '')
+    sort = request.GET.get('sort', '')
+    routeId = int(request.GET.get('routeId', 0))
+    eventId = int(request.GET.get('eventId', 0))
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 0))
+
+    reportList = readReportList(search, sort, routeId, eventId)
+
+    recCount = reportList.count()
+    startRec = 0
+    endRec = recCount
+    if limit != 0 and recCount > limit:
+        startRec = (page - 1) * limit
+        endRec = page * limit
+    responseReportList = ReportListSerializer(reportList, many=True).data[startRec:endRec]
     return Response({'recCount': reportList.count(), 'reportList': responseReportList}, status=status.HTTP_200_OK)
 
 

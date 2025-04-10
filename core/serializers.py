@@ -41,7 +41,7 @@ class RouteListSerializer(ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ('id', 'name', 'photoURL', 'length', 'asphalt', 'grader', 'soil', 'jungle', 'author', 'complexity')
+        fields = ('id', 'name', 'photoURL', 'length', 'asphalt', 'grader', 'soil', 'jungle', 'author', 'complexity', 'dateCreate', 'dateUpdate')
 
 
 class EventSerializer(ModelSerializer):
@@ -71,7 +71,7 @@ class ReportListSerializer(ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('id', 'date', 'name', 'photoURL', 'author')
+        fields = ('id', 'date', 'name', 'photoURL', 'author', 'dateCreate', 'dateUpdate')
 
 
 class EventSerializer(ModelSerializer):
@@ -94,4 +94,4 @@ class EventListSerializer(ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL')
+        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL', 'dateCreate', 'dateUpdate')

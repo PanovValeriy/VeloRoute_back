@@ -8,9 +8,22 @@ from core.serializers import EventListSerializer, EventSerializer
 
 @api_view(['GET'])
 def view_event_list(request):
-    eventList = readEventList()
+    search = request.GET.get('search', '')
+    hideArchive = request.GET.get('hideArchive', '') == 'true'
+    sort = request.GET.get('sort', '')
+    routeId = int(request.GET.get('routeId', 0))
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 0))
+
+    eventList = readEventList(search, hideArchive, sort, routeId)
     recCount = eventList.count()
-    responseEventList = EventListSerializer(eventList, many=True).data
+    startRec = 0
+    endRec = recCount
+    if limit != 0 and recCount > limit:
+        startRec = (page - 1) * limit
+        endRec = page * limit
+
+    responseEventList = EventListSerializer(eventList, many=True).data[startRec:endRec]
     return Response({'recCount': recCount, 'eventList': responseEventList}, status=status.HTTP_200_OK)
 
 

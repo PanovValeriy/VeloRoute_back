@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'veloroute.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'db_vr67',
         'USER': 'postgres',
         'PASSWORD': 'Qwer1234',
         'HOST': 'localhost',

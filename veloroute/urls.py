@@ -7,6 +7,7 @@ urlpatterns = [
     path('api/route/', include('route.urls')),
     path('api/report/', include('report.urls')),
     path('api/event/', include('event.urls')),
+    path('api/news/', include('news.urls')),
     path('admin/', admin.site.urls),
     re_path(r'[.]*', core.views.index)
 ]
