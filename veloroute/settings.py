@@ -16,6 +16,24 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+f_set = None
+try:
+    f_set = open(os.path.join(BASE_DIR, 'settings', 'con_db.set'), 'r')
+    con_db = {
+        'NAME': f_set.readline().strip(),
+        'USER': f_set.readline().strip(),
+        'PASSWORD': f_set.readline().strip(),
+    }
+except:
+    con_db = {
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+    }
+finally:
+    if f_set:
+        f_set.close()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -81,9 +99,9 @@ WSGI_APPLICATION = 'veloroute.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_vr67',
-        'USER': 'postgres',
-        'PASSWORD': 'Qwer1234',
+        'NAME': con_db['NAME'],
+        'USER': con_db['USER'],
+        'PASSWORD': con_db['PASSWORD'],
         'HOST': 'localhost',
         'PORT': 5432,
     }
