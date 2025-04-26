@@ -2,7 +2,9 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from core.constants import STATUS_PUBLIC, STATUS_HIDE
 from core.crud import readRouteList, readRoute
+from core.libs import calcCodeTrue
 from core.serializers import RouteListSerializer, RouteSerializer
 
 
@@ -32,8 +34,10 @@ def view_route_list(request):
 @api_view(['GET'])
 def view_route(request, pk):
     route = readRoute(pk)
+    code = request.GET.get('code', '')
+    code_true = calcCodeTrue(pk, 1)
     if route:
         responseRoute = RouteSerializer(route).data
-        return Response(responseRoute, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'Маршрут не найден'}, status=status.HTTP_404_NOT_FOUND)
+        if route.status == STATUS_PUBLIC or (route.status == STATUS_HIDE and code == code_true):
+            return Response(responseRoute, status=status.HTTP_200_OK)
+    return Response({'error': 'Маршрут не найден'}, status=status.HTTP_404_NOT_FOUND)

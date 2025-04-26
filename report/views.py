@@ -2,8 +2,9 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from core.constants import STATUS_PUBLIC, STATUS_HIDE
 from core.crud import readReportList, readReport
+from core.libs import calcCodeTrue
 from core.serializers import ReportListSerializer, ReportSerializer
 
 
@@ -31,7 +32,10 @@ def view_report_list(request):
 @api_view(['GET'])
 def view_report(request, pk):
     report = readReport(pk)
-    if report is None:
-        return Response({'error': 'Report not found'}, status=status.HTTP_404_NOT_FOUND)
-    responseReport = ReportSerializer(report).data
-    return Response(responseReport, status=status.HTTP_200_OK)
+    code = request.GET.get('code', '')
+    code_true = calcCodeTrue(pk, 2)
+    if report:
+        responseReport = ReportSerializer(report).data
+        if report.status == STATUS_PUBLIC or (report.status == STATUS_HIDE and code == code_true):
+            return Response(responseReport, status=status.HTTP_200_OK)
+    return Response({'error': 'Отчет не найден'}, status=status.HTTP_404_NOT_FOUND)

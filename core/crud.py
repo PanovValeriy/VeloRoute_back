@@ -1,9 +1,8 @@
 import datetime
 from django.utils import timezone
 import operator
-
 from django.db.models import Q
-
+from core.constants import STATUS_PUBLIC
 from core.libs import ip2int
 from core.models import Route, Report, Event, VisitCount
 from core.serializers import EventSerializer, RouteSerializer, ReportSerializer
@@ -11,15 +10,15 @@ from core.serializers import EventSerializer, RouteSerializer, ReportSerializer
 
 def readRouteList(search='', length='', complexity=0, sort=''):
     # Фильтр по статусу
-    q = Q(status=2)
+    q = Q(status=STATUS_PUBLIC)
     # Фильтр по тексту
     if search != '':
         q &= operator.or_(operator.or_(Q(name__icontains=search), Q(description__icontains=search)), Q(pointList__icontains=search))
     # Фильтр по протяженности
     if length != '':
-        lengthStart, lengthEnd = list(map(int,length.split(',')))
+        lengthStart, lengthEnd = list(map(int, length.split(',')))
     else:
-        lengthStart, lengthEnd = (0,0)
+        lengthStart, lengthEnd = (0, 0)
     if lengthStart > 0:
         q &= Q(length__gte=lengthStart)
     if lengthEnd > 0:
@@ -49,7 +48,7 @@ def readRouteList(search='', length='', complexity=0, sort=''):
 def readRoute(id):
     try:
         result = Route.objects.get(pk=id)
-        if result.status == 0:
+        if result.status < 2:
             result = None
     except:
         result = None
@@ -58,7 +57,7 @@ def readRoute(id):
 
 def readReportList(search='', sort='', routeId=0, eventId=0):
     # Фильтр по статусу
-    q = Q(status=2)
+    q = Q(status=STATUS_PUBLIC)
     # Фильтр по тексту
     if search != '':
         q &= operator.or_(Q(name__icontains=search), Q(body__icontains=search))
@@ -91,7 +90,7 @@ def readReportList(search='', sort='', routeId=0, eventId=0):
 def readReport(id):
     try:
         result = Report.objects.get(pk=id)
-        if result.status == 0:
+        if result.status < 2:
             result = None
     except:
         result = None
@@ -100,7 +99,7 @@ def readReport(id):
 
 def readEventList(search='', hideArchive=False, sort='', routeId=0):
     # Фильтр по статусу
-    q = Q(status=2)
+    q = Q(status=STATUS_PUBLIC)
     # Фильтр по строке
     if search != '':
         q &= operator.or_(Q(name__icontains=search), Q(description__icontains=search))
@@ -133,7 +132,7 @@ def readEventList(search='', hideArchive=False, sort='', routeId=0):
 def readEvent(id):
     try:
         result = Event.objects.get(pk=id)
-        if result.status == 0:
+        if result.status < 2:
             result = None
     except:
         result = None
@@ -149,12 +148,12 @@ def readNewsList(count=5, operation=0):
         return False
 
     newsList = []
-    routeCreateList = Route.objects.all().order_by('-dateCreate')[:count]
-    reportCreateList = Report.objects.all().order_by('-dateCreate')[:count]
-    eventCreateList = Event.objects.all().order_by('-dateCreate')[:count]
-    routeUpdateList = Route.objects.all().order_by('-dateUpdate')[:count]
-    reportUpdateList = Report.objects.all().order_by('-dateUpdate')[:count]
-    eventUpdateList = Event.objects.all().order_by('-dateUpdate')[:count]
+    routeCreateList = Route.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
+    reportCreateList = Report.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
+    eventCreateList = Event.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
+    routeUpdateList = Route.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
+    reportUpdateList = Report.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
+    eventUpdateList = Event.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
 
     routeCreateRecNo = 0
     reportCreateRecNo = 0
@@ -171,7 +170,7 @@ def readNewsList(count=5, operation=0):
             dateMax = dateCreate
         elif operation == 2:
             dateMax = dateUpdate
-        if operation in (0,1) and dateMax == dateCreate:
+        if operation in (0, 1) and dateMax == dateCreate:
             if eventCreateList[eventCreateRecNo].dateCreate == dateMax:
                 if not findId(3, eventCreateList[eventCreateRecNo].id):
                     newsList.append({
@@ -205,7 +204,7 @@ def readNewsList(count=5, operation=0):
                     })
                     i += 1
                 reportCreateRecNo += 1
-        elif operation in (0,2) and dateMax == dateUpdate:
+        elif operation in (0, 2) and dateMax == dateUpdate:
             if eventUpdateList[eventUpdateRecNo].dateUpdate == dateMax:
                 if not findId(3, eventUpdateList[eventUpdateRecNo].id):
                     newsList.append({

@@ -1,8 +1,9 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from core.constants import STATUS_PUBLIC, STATUS_HIDE
 from core.crud import readEventList, readEvent
+from core.libs import calcCodeTrue
 from core.serializers import EventListSerializer, EventSerializer
 
 
@@ -30,7 +31,10 @@ def view_event_list(request):
 @api_view(['GET'])
 def view_event(request, pk):
     event = readEvent(pk)
-    if event is None:
-        return Response({'error', 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
-    responseEvent = EventSerializer(event).data
-    return Response(responseEvent, status=status.HTTP_200_OK)
+    code = request.GET.get('code', '')
+    code_true = calcCodeTrue(pk, 3)
+    if event:
+        responseEvent = EventSerializer(event).data
+        if event.status == STATUS_PUBLIC or (event.status == STATUS_HIDE and code == code_true):
+            return Response(responseEvent, status=status.HTTP_200_OK)
+    return Response({'error': 'Событие не найдено'}, status=status.HTTP_404_NOT_FOUND)

@@ -12,3 +12,6 @@ def int2ip(ip_int):
         ip_arr[3 - i] = ip_int % 256
         ip_int = ip_int // 256
     return '.'.join(map(str, ip_arr))
+
+def calcCodeTrue(pk, type):
+    return str(((pk + 108) * 6 - 77) // 4 + type)[::-1]
