@@ -139,7 +139,7 @@ def readEvent(id):
     return result
 
 
-def readNewsList(count=5, operation=0):
+def readNewsList(count=5, operation=0, showEventArchive=False):
 
     def findId(typeDoc, id):
         for news in newsList:
@@ -148,12 +148,16 @@ def readNewsList(count=5, operation=0):
         return False
 
     newsList = []
-    routeCreateList = Route.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
-    reportCreateList = Report.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
-    eventCreateList = Event.objects.filter(status=STATUS_PUBLIC).order_by('-dateCreate')[:count]
-    routeUpdateList = Route.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
-    reportUpdateList = Report.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
-    eventUpdateList = Event.objects.filter(status=STATUS_PUBLIC).order_by('-dateUpdate')[:count]
+
+    q = Q(status=STATUS_PUBLIC)
+    routeCreateList = Route.objects.filter(q).order_by('-dateCreate', 'name')[:count]
+    routeUpdateList = Route.objects.filter(q).order_by('-dateUpdate', 'name')[:count]
+    reportCreateList = Report.objects.filter(q).order_by('-dateCreate', 'name')[:count]
+    reportUpdateList = Report.objects.filter(q).order_by('-dateUpdate', 'name')[:count]
+    if not showEventArchive:
+        q &= Q(startDateTime__gte=timezone.now())
+    eventCreateList = Event.objects.filter(q).order_by('-dateCreate', 'name')[:count]
+    eventUpdateList = Event.objects.filter(q).order_by('-dateUpdate', 'name')[:count]
 
     routeCreateRecNo = 0
     reportCreateRecNo = 0
@@ -162,82 +166,105 @@ def readNewsList(count=5, operation=0):
     reportUpdateRecNo = 0
     eventUpdateRecNo = 0
     i = 0
+    dateInit = datetime.date.fromisoformat('2000-01-01')
     while i < count:
-        dateCreate = max(eventCreateList[eventCreateRecNo].dateCreate, routeCreateList[routeCreateRecNo].dateCreate, reportCreateList[reportCreateRecNo].dateCreate)
-        dateUpdate = max(eventUpdateList[eventUpdateRecNo].dateUpdate, routeUpdateList[routeUpdateRecNo].dateUpdate, reportUpdateList[reportUpdateRecNo].dateUpdate)
+        dateCreate = max(
+            eventCreateList[eventCreateRecNo].dateCreate if eventCreateRecNo < eventCreateList.count() else dateInit,
+            routeCreateList[routeCreateRecNo].dateCreate if routeCreateRecNo < routeCreateList.count() else dateInit,
+            reportCreateList[reportCreateRecNo].dateCreate if reportCreateRecNo < reportCreateList.count() else dateInit
+        )
+        dateUpdate = max(
+            eventUpdateList[eventUpdateRecNo].dateUpdate if eventUpdateRecNo < eventUpdateList.count() else dateInit,
+            routeUpdateList[routeUpdateRecNo].dateUpdate if routeUpdateRecNo < routeUpdateList.count() else dateInit,
+            reportUpdateList[reportUpdateRecNo].dateUpdate if reportUpdateRecNo < reportUpdateList.count() else dateInit
+        )
         dateMax = max(dateCreate, dateUpdate)
         if operation == 1:
             dateMax = dateCreate
         elif operation == 2:
             dateMax = dateUpdate
         if operation in (0, 1) and dateMax == dateCreate:
-            if eventCreateList[eventCreateRecNo].dateCreate == dateMax:
+            if eventCreateRecNo < eventCreateList.count() and eventCreateList[eventCreateRecNo].dateCreate == dateMax:
                 if not findId(3, eventCreateList[eventCreateRecNo].id):
                     newsList.append({
                         'oper': 1,
                         'type': 3,
                         'id': eventCreateList[eventCreateRecNo].id,
+                        'dateCreate': eventCreateList[eventCreateRecNo].dateCreate,
+                        'dateUpdate': eventCreateList[eventCreateRecNo].dateUpdate,
                         'name': eventCreateList[eventCreateRecNo].name,
-                        'record': EventSerializer(eventCreateList[eventCreateRecNo]).data,
                     })
                     i += 1
                 eventCreateRecNo += 1
-            elif routeCreateList[routeCreateRecNo].dateCreate == dateMax:
+            elif routeCreateRecNo < routeCreateList.count() and routeCreateList[routeCreateRecNo].dateCreate == dateMax:
                 if not findId(1, routeCreateList[routeCreateRecNo].id):
                     newsList.append({
                         'oper': 1,
                         'type': 1,
                         'id': routeCreateList[routeCreateRecNo].id,
+                        'dateCreate': routeCreateList[routeCreateRecNo].dateCreate,
+                        'dateUpdate': routeCreateList[routeCreateRecNo].dateUpdate,
                         'name': routeCreateList[routeCreateRecNo].name,
-                        'record': RouteSerializer(routeCreateList[routeCreateRecNo]).data,
                     })
                     i += 1
                 routeCreateRecNo += 1
-            elif reportCreateList[reportCreateRecNo].dateCreate == dateMax:
+            elif reportCreateRecNo < reportCreateList.count() and reportCreateList[reportCreateRecNo].dateCreate == dateMax:
                 if not findId(2, reportCreateList[reportCreateRecNo].id):
                     newsList.append({
                         'oper': 1,
                         'type': 2,
                         'id': reportCreateList[reportCreateRecNo].id,
+                        'dateCreate': reportCreateList[reportCreateRecNo].dateCreate,
+                        'dateUpdate': reportCreateList[reportCreateRecNo].dateUpdate,
                         'name': reportCreateList[reportCreateRecNo].name,
-                        'record': ReportSerializer(reportCreateList[reportCreateRecNo]).data,
                     })
                     i += 1
                 reportCreateRecNo += 1
         elif operation in (0, 2) and dateMax == dateUpdate:
-            if eventUpdateList[eventUpdateRecNo].dateUpdate == dateMax:
+            if eventUpdateRecNo < eventUpdateList.count() and eventUpdateList[eventUpdateRecNo].dateUpdate == dateMax:
                 if not findId(3, eventUpdateList[eventUpdateRecNo].id):
                     newsList.append({
                         'oper': 2,
                         'type': 3,
                         'id': eventUpdateList[eventUpdateRecNo].id,
+                        'dateCreate': eventUpdateList[eventUpdateRecNo].dateCreate,
+                        'dateUpdate': eventUpdateList[eventUpdateRecNo].dateUpdate,
                         'name': eventUpdateList[eventUpdateRecNo].name,
-                        'record': EventSerializer(eventUpdateList[eventUpdateRecNo]).data,
                     })
                     i += 1
                 eventUpdateRecNo += 1
-            elif routeUpdateList[routeUpdateRecNo].dateUpdate == dateMax:
+            elif routeUpdateRecNo < routeUpdateList.count() and routeUpdateList[routeUpdateRecNo].dateUpdate == dateMax:
                 if not findId(1, routeUpdateList[routeUpdateRecNo].id):
                     newsList.append({
                         'oper': 2,
                         'type': 1,
                         'id': routeUpdateList[routeUpdateRecNo].id,
+                        'dateCreate': routeUpdateList[routeUpdateRecNo].dateCreate,
+                        'dateUpdate': routeUpdateList[routeUpdateRecNo].dateUpdate,
                         'name': routeUpdateList[routeUpdateRecNo].name,
-                        'record': RouteSerializer(routeUpdateList[routeUpdateRecNo]).data,
                     })
                     i += 1
                 routeUpdateRecNo += 1
-            elif reportUpdateList[reportUpdateRecNo].dateUpdate == dateMax:
+            elif reportUpdateRecNo < reportUpdateList.count() and reportUpdateList[reportUpdateRecNo].dateUpdate == dateMax:
                 if not findId(2, reportUpdateList[reportUpdateRecNo].id):
                     newsList.append({
                         'oper': 2,
                         'type': 2,
                         'id': reportUpdateList[reportUpdateRecNo].id,
+                        'dateCreate': reportUpdateList[reportUpdateRecNo].dateCreate,
+                        'dateUpdate': reportUpdateList[reportUpdateRecNo].dateUpdate,
                         'name': reportUpdateList[reportUpdateRecNo].name,
-                        'record': ReportSerializer(reportUpdateList[reportUpdateRecNo]).data,
                     })
                     i += 1
                 reportUpdateRecNo += 1
+        if eventCreateRecNo >= eventCreateList.count() \
+          and routeCreateRecNo >= routeCreateList.count() \
+          and reportCreateRecNo >= reportCreateList.count() \
+          and eventUpdateRecNo >= eventUpdateList.count() \
+          and routeUpdateRecNo >= routeUpdateList.count() \
+          and reportUpdateRecNo >= reportUpdateList.count()\
+          or dateMax == dateInit:
+            break
     return newsList
 
 

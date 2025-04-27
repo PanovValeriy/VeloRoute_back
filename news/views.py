@@ -9,7 +9,8 @@ from core.crud import readNewsList
 def view_news_list(request):
   count = int(request.GET.get('count', 5))
   operation = int(request.GET.get('operation', 0))
-  newsList = readNewsList(count, operation)
+  showEventArchive = request.GET.get('showEventArchive', 'false') == 'true'
+  newsList = readNewsList(count, operation, showEventArchive)
   recCount = len(newsList)
   return Response({'recCount': recCount, 'newsList': newsList}, status=status.HTTP_200_OK)
 
