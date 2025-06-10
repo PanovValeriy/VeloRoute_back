@@ -216,6 +216,7 @@ def readNewsList(count=5, operation=0, showEventArchive=False):
                         'id': reportCreateList[reportCreateRecNo].id,
                         'dateCreate': reportCreateList[reportCreateRecNo].dateCreate,
                         'dateUpdate': reportCreateList[reportCreateRecNo].dateUpdate,
+                        'date': reportCreateList[reportCreateRecNo].date,
                         'name': reportCreateList[reportCreateRecNo].name,
                     })
                     i += 1
@@ -253,6 +254,7 @@ def readNewsList(count=5, operation=0, showEventArchive=False):
                         'id': reportUpdateList[reportUpdateRecNo].id,
                         'dateCreate': reportUpdateList[reportUpdateRecNo].dateCreate,
                         'dateUpdate': reportUpdateList[reportUpdateRecNo].dateUpdate,
+                        'date': reportCreateList[reportUpdateRecNo].date,
                         'name': reportUpdateList[reportUpdateRecNo].name,
                     })
                     i += 1
