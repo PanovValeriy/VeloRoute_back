@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from core.constants import STATUS_PUBLIC, STATUS_HIDE
-from core.crud import readReportList, readReport
+from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_REPORT
+from core.crud import readReportList, readReport, addView
 from core.libs import calcCodeTrue
 from core.serializers import ReportListSerializer, ReportSerializer
 
@@ -37,5 +37,6 @@ def view_report(request, pk):
     if report:
         responseReport = ReportSerializer(report).data
         if report.status == STATUS_PUBLIC or (report.status == STATUS_HIDE and code == code_true):
+            addView(MODULE_REPORT, report.id)
             return Response(responseReport, status=status.HTTP_200_OK)
     return Response({'error': 'Отчет не найден'}, status=status.HTTP_404_NOT_FOUND)

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
-from core.crud import addVisit
+from core.constants import MODULE_CORE
+from core.crud import addVisit, addView
 
 
 def index(request):
@@ -10,4 +11,5 @@ def index(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     addVisit(ip)
+    addView(MODULE_CORE)
     return render(request, template_name='index.html')

@@ -2,3 +2,9 @@ STATUS_LIST = ['', 'Редактируется', 'По ссылке', 'Публ�
 STATUS_EDIT = 1
 STATUS_HIDE = 2
 STATUS_PUBLIC = 3
+
+
+MODULE_CORE = 0
+MODULE_ROUTE = 1
+MODULE_REPORT = 2
+MODULE_EVENT = 3

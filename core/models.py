@@ -140,3 +140,13 @@ class VisitCount(models.Model):
         ordering = ('-date',)
         verbose_name = 'Посещение'
         verbose_name_plural = 'Посещения'
+
+
+class ViewCount(models.Model):
+    typeModule = models.IntegerField(verbose_name='Тип модуля')
+    idPage = models.IntegerField(verbose_name='Идентификатор страницы в модуле')
+    count = models.IntegerField(verbose_name='Количество просмотров')
+
+    class Meta:
+        verbose_name = 'Просмотр'
+        verbose_name_plural = 'Просмотры'

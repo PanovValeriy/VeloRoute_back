@@ -4,7 +4,7 @@ import operator
 from django.db.models import Q
 from core.constants import STATUS_PUBLIC
 from core.libs import ip2int
-from core.models import Route, Report, Event, VisitCount
+from core.models import Route, Report, Event, VisitCount, ViewCount
 from core.serializers import EventSerializer, RouteSerializer, ReportSerializer
 
 
@@ -278,3 +278,12 @@ def addVisit(ip):
     except:
         recVisitCount = VisitCount(ip=ip2int(ip), date=datetime.date.today(), count=1)
         recVisitCount.save()
+
+def addView(typeModule, idPage=0):
+    try:
+        recViewCount = ViewCount.objects.filter(typeModule=typeModule, idPage=idPage)[0]
+        recViewCount.count += 1
+        recViewCount.save()
+    except:
+        recViewCount = ViewCount(typeModule=typeModule, idPage=idPage, count=1)
+        recViewCount.save()
