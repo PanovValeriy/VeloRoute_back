@@ -36,6 +36,7 @@ def view_event(request, pk):
     if event:
         responseEvent = EventSerializer(event).data
         if event.status == STATUS_PUBLIC or (event.status == STATUS_HIDE and code == code_true):
-            addView(MODULE_EVENT, event.id)
+            if not code:
+                addView(MODULE_EVENT, event.id)
             return Response(responseEvent, status=status.HTTP_200_OK)
     return Response({'error': 'Событие не найдено'}, status=status.HTTP_404_NOT_FOUND)

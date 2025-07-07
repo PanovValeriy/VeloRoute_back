@@ -5,11 +5,13 @@ from core.crud import addVisit, addView
 
 
 def index(request):
+    code = request.GET.get('code', '')
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
     addVisit(ip)
-    addView(MODULE_CORE)
+    if not code:
+        addView(MODULE_CORE)
     return render(request, template_name='index.html')

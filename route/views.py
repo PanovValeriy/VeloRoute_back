@@ -39,6 +39,7 @@ def view_route(request, pk):
     if route:
         responseRoute = RouteSerializer(route).data
         if route.status == STATUS_PUBLIC or (route.status == STATUS_HIDE and code == code_true):
-            addView(MODULE_ROUTE, route.id)
+            if not code:
+                addView(MODULE_ROUTE, route.id)
             return Response(responseRoute, status=status.HTTP_200_OK)
     return Response({'error': 'Маршрут не найден'}, status=status.HTTP_404_NOT_FOUND)

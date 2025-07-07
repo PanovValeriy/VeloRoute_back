@@ -37,6 +37,7 @@ def view_report(request, pk):
     if report:
         responseReport = ReportSerializer(report).data
         if report.status == STATUS_PUBLIC or (report.status == STATUS_HIDE and code == code_true):
-            addView(MODULE_REPORT, report.id)
+            if not code:
+                addView(MODULE_REPORT, report.id)
             return Response(responseReport, status=status.HTTP_200_OK)
     return Response({'error': 'Отчет не найден'}, status=status.HTTP_404_NOT_FOUND)
