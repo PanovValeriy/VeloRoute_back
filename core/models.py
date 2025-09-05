@@ -1,5 +1,5 @@
 from django.db import models
-
+import datetime
 from core.constants import STATUS_LIST
 
 
@@ -146,6 +146,7 @@ class ViewCount(models.Model):
     typeModule = models.IntegerField(verbose_name='Тип модуля')
     idPage = models.IntegerField(verbose_name='Идентификатор страницы в модуле')
     count = models.IntegerField(verbose_name='Количество просмотров')
+    datelast = models.DateField(verbose_name='Дата последнего просмотра', default=datetime.date.today)
 
     class Meta:
         verbose_name = 'Просмотр'

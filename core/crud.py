@@ -283,6 +283,7 @@ def addView(typeModule, idPage=0):
     try:
         recViewCount = ViewCount.objects.filter(typeModule=typeModule, idPage=idPage)[0]
         recViewCount.count += 1
+        recViewCount.datelast = datetime.date.today()
         recViewCount.save()
     except:
         recViewCount = ViewCount(typeModule=typeModule, idPage=idPage, count=1)
