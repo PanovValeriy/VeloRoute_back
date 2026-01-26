@@ -85,7 +85,7 @@ class Event(models.Model):
     route = models.ForeignKey(Route, on_delete=models.PROTECT, null=True, blank=True, verbose_name='Маршрут')
     name = models.CharField(max_length=150, verbose_name='Название')
     typeEvent = models.ForeignKey(TypeEvent, on_delete=models.PROTECT, verbose_name='Тип события')
-    trackFileURL = models.TextField(verbose_name='Ссылка на файл с треком')
+    trackFileURL = models.TextField(verbose_name='Ссылка на файл с треком', null=True, blank=True)
     pointList = models.TextField(verbose_name='Нитка маршрута')
     length = models.IntegerField(verbose_name='Протяженность')
     tempo = models.ForeignKey(Tempo, on_delete=models.PROTECT, verbose_name='Темп')
