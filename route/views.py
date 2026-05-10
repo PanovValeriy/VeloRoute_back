@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_ROUTE
-from core.crud import readRouteList, readRoute, addView
+from core.crud import readRouteList, readRoute, addView, replaceTags
 from core.libs import calcCodeTrue
 from core.serializers import RouteListSerializer, RouteSerializer
 
@@ -36,6 +36,7 @@ def view_route(request, pk):
     route = readRoute(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 1)
+    route.description = replaceTags(route.description)
     if route:
         responseRoute = RouteSerializer(route).data
         if route.status == STATUS_PUBLIC or (route.status == STATUS_HIDE and code == code_true):

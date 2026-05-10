@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_REPORT
-from core.crud import readReportList, readReport, addView
+from core.crud import readReportList, readReport, addView, replaceTags
 from core.libs import calcCodeTrue
 from core.serializers import ReportListSerializer, ReportSerializer
 
@@ -34,6 +34,7 @@ def view_report(request, pk):
     report = readReport(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 2)
+    report.body = replaceTags(report.body)
     if report:
         responseReport = ReportSerializer(report).data
         if report.status == STATUS_PUBLIC or (report.status == STATUS_HIDE and code == code_true):

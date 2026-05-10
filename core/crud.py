@@ -5,7 +5,34 @@ from django.db.models import Q
 from core.constants import STATUS_PUBLIC
 from core.libs import ip2int
 from core.models import Route, Report, Event, VisitCount, ViewCount
-from core.serializers import EventSerializer, RouteSerializer, ReportSerializer
+
+
+def replaceTags(content):
+    tagList = ['ROUTE', 'REPORT', 'EVENT']
+    for tag in tagList:
+        startTag = '['+tag+']'
+        endTag = '[/'+tag+']'
+        while startTag in content:
+            start = content.index(startTag)
+            end = content.index(endTag, start)
+            id = int(content[start+len(startTag):end])
+            result = {'id': 0, 'name': '', 'url': ''}
+            record = None
+            if tag == 'ROUTE':
+                record = readRoute(id)
+                result['url']='route'
+            if tag == 'REPORT':
+                record = readReport(id)
+                result['url'] = 'report'
+            if tag == 'EVENT':
+                record = readEvent(id)
+                result['url'] = 'event'
+            if record:
+                result['name'] = record.name
+                result['id'] = record.id
+            newTag = '[LINK][LABEL]'+result['name']+'[/LABEL]'+'/'+result['url']+'/'+str(result['id'])+'[/LINK]'
+            content = content[:start] + newTag + content[end+len(endTag):]
+    return content
 
 
 def readRouteList(search='', length='', complexity=0, sort=''):

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_EVENT
-from core.crud import readEventList, readEvent, addView
+from core.crud import readEventList, readEvent, addView, replaceTags
 from core.libs import calcCodeTrue
 from core.serializers import EventListSerializer, EventSerializer
 
@@ -33,6 +33,7 @@ def view_event(request, pk):
     event = readEvent(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 3)
+    event.description = replaceTags(event.description)
     if event:
         responseEvent = EventSerializer(event).data
         if event.status == STATUS_PUBLIC or (event.status == STATUS_HIDE and code == code_true):
