@@ -9,9 +9,10 @@ from core.models import Route, Report, Event, VisitCount, ViewCount
 
 def replaceTags(content):
     tagList = ['ROUTE', 'REPORT', 'EVENT']
+    print('in:', content)
     for tag in tagList:
-        startTag = '['+tag+']'
-        endTag = '[/'+tag+']'
+        startTag = f'[{tag}]'
+        endTag = f'[/{tag}]'
         while startTag in content:
             start = content.index(startTag)
             end = content.index(endTag, start)
@@ -20,7 +21,7 @@ def replaceTags(content):
             record = None
             if tag == 'ROUTE':
                 record = readRoute(id)
-                result['url']='route'
+                result['url'] = 'route'
             if tag == 'REPORT':
                 record = readReport(id)
                 result['url'] = 'report'
@@ -30,8 +31,9 @@ def replaceTags(content):
             if record:
                 result['name'] = record.name
                 result['id'] = record.id
-            newTag = '[LINK][LABEL]'+result['name']+'[/LABEL]'+'/'+result['url']+'/'+str(result['id'])+'[/LINK]'
-            content = content[:start] + newTag + content[end+len(endTag):]
+                newTag = f'[{tag}LINK][LABEL]{result['name']}[/LABEL]/{result['url']}/{str(result['id'])}[/{tag}LINK]'
+                print(newTag)
+                content = content[:start] + newTag + content[end+len(endTag):]
     return content
 
 
