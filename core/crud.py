@@ -31,7 +31,7 @@ def replaceTags(content):
             if record:
                 result['name'] = record.name
                 result['id'] = record.id
-                newTag = f'[{tag}LINK][LABEL]{result['name']}[/LABEL]/{result['url']}/{str(result['id'])}[/{tag}LINK]'
+                newTag = f"[{tag}LINK][LABEL]{result['name']}[/LABEL]/{result['url']}/{str(result['id'])}[/{tag}LINK]"
                 print(newTag)
                 content = content[:start] + newTag + content[end+len(endTag):]
     return content
