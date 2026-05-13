@@ -28,6 +28,7 @@ def view_route_list(request):
         startRec = (page - 1) * limit
         endRec = page * limit
     responseRouteList = RouteListSerializer(routeList, many=True).data[startRec:endRec]
+    print(responseRouteList)
     return Response({'recCount': recCount, 'routeList': responseRouteList}, status=status.HTTP_200_OK)
 
 

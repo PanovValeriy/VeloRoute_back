@@ -1,3 +1,4 @@
+from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
 from core.models import *
 
@@ -38,11 +39,15 @@ class RouteSerializer(ModelSerializer):
 class RouteListSerializer(ModelSerializer):
     author = AuthorSerializer()
     complexity = ComplexitySerializer()
+    viewsCount = SerializerMethodField()
 
     class Meta:
         model = Route
-        fields = ('id', 'name', 'photoURL', 'length', 'asphalt', 'grader', 'soil', 'jungle', 'author', 'complexity', 'dateCreate', 'dateUpdate')
+        fields = ('id', 'name', 'photoURL', 'length', 'asphalt', 'grader', 'soil', 'jungle', 'author', 'complexity', 'dateCreate', 'dateUpdate', 'viewsCount')
 
+    def get_viewsCount(self, obj):
+        # obj — это уже экземпляр Report с аннотированным полем views_count
+        return getattr(obj, 'viewsCount', 0)
 
 class EventSerializer(ModelSerializer):
     author = AuthorSerializer()
@@ -68,10 +73,15 @@ class ReportSerializer(ModelSerializer):
 
 class ReportListSerializer(ModelSerializer):
     author = AuthorSerializer()
+    viewsCount = SerializerMethodField()
 
     class Meta:
         model = Report
-        fields = ('id', 'date', 'name', 'photoURL', 'author', 'dateCreate', 'dateUpdate')
+        fields = ('id', 'date', 'name', 'photoURL', 'author', 'dateCreate', 'dateUpdate', 'viewsCount')
+
+    def get_viewsCount(self, obj):
+        # obj — это уже экземпляр Report с аннотированным полем views_count
+        return getattr(obj, 'viewsCount', 0)
 
 
 class EventSerializer(ModelSerializer):
@@ -91,7 +101,12 @@ class EventListSerializer(ModelSerializer):
     typeEvent = TypeEventSerializer()
     tempo = TempoSerializer()
     complexity = ComplexitySerializer()
+    viewsCount = SerializerMethodField()
 
     class Meta:
         model = Event
-        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL', 'dateCreate', 'dateUpdate')
+        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL', 'dateCreate', 'dateUpdate', 'viewsCount')
+
+    def get_viewsCount(self, obj):
+        # obj — это уже экземпляр Report с аннотированным полем views_count
+        return getattr(obj, 'viewsCount', 0)

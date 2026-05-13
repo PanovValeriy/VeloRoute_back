@@ -1,7 +1,8 @@
 import datetime
+
 from django.utils import timezone
 import operator
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery, IntegerField, Sum
 from core.constants import STATUS_PUBLIC
 from core.libs import ip2int
 from core.models import Route, Report, Event, VisitCount, ViewCount
@@ -9,7 +10,6 @@ from core.models import Route, Report, Event, VisitCount, ViewCount
 
 def replaceTags(content):
     tagList = ['ROUTE', 'REPORT', 'EVENT']
-    print('in:', content)
     for tag in tagList:
         startTag = f'[{tag}]'
         endTag = f'[/{tag}]'
@@ -32,7 +32,6 @@ def replaceTags(content):
                 result['name'] = record.name
                 result['id'] = record.id
                 newTag = f"[{tag}LINK][LABEL]{result['name']}[/LABEL]/{result['url']}/{str(result['id'])}[/{tag}LINK]"
-                print(newTag)
                 content = content[:start] + newTag + content[end+len(endTag):]
     return content
 
@@ -70,7 +69,14 @@ def readRouteList(search='', length='', complexity=0, sort=''):
             order = '-' + order
     if order == '':
         order = 'name'
-    result = Route.objects.filter(q).order_by(order)
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=1, idPage=OuterRef('id'))
+        .values('count')
+    )
+    result = Route.objects.filter(q).order_by(order).annotate(
+        viewsCount=Subquery(views_subquery, output_field=IntegerField())
+    )
     return result
 
 
@@ -112,7 +118,15 @@ def readReportList(search='', sort='', routeId=0, eventId=0):
     if order == '':
         order = 'name'
 
-    result = Report.objects.filter(q).order_by(order)
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=2, idPage=OuterRef('id'))
+        .values('count')
+    )
+
+    result = Report.objects.filter(q).order_by(order).annotate(
+        viewsCount=Subquery(views_subquery, output_field=IntegerField())
+    )
     return result
 
 
@@ -154,7 +168,15 @@ def readEventList(search='', hideArchive=False, sort='', routeId=0):
     if order == '':
         order = '-startDateTime'
 
-    result = Event.objects.filter(q).order_by(order)
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=3, idPage=OuterRef('id'))
+        .values('count')
+    )
+
+    result = Event.objects.filter(q).order_by(order).annotate(
+        viewsCount=Subquery(views_subquery, output_field=IntegerField())
+    )
     return result
 
 
