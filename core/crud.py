@@ -244,6 +244,7 @@ def readNewsList(count=5, operation=0, showEventArchive=False):
                         'dateCreate': eventCreateList[eventCreateRecNo].dateCreate,
                         'dateUpdate': eventCreateList[eventCreateRecNo].dateUpdate,
                         'name': eventCreateList[eventCreateRecNo].name,
+                        'date': eventCreateList[eventCreateRecNo].startDateTime,
                     })
                     i += 1
                 eventCreateRecNo += 1
@@ -282,6 +283,7 @@ def readNewsList(count=5, operation=0, showEventArchive=False):
                         'dateCreate': eventUpdateList[eventUpdateRecNo].dateCreate,
                         'dateUpdate': eventUpdateList[eventUpdateRecNo].dateUpdate,
                         'name': eventUpdateList[eventUpdateRecNo].name,
+                        'date': eventUpdateList[eventUpdateRecNo].startDateTime,
                     })
                     i += 1
                 eventUpdateRecNo += 1
