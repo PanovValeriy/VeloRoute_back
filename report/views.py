@@ -34,8 +34,8 @@ def view_report(request, pk):
     report = readReport(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 2)
-    report.body = replaceTags(report.body)
     if report:
+        report.body = replaceTags(report.body)
         responseReport = ReportSerializer(report).data
         if report.status == STATUS_PUBLIC or (report.status == STATUS_HIDE and code == code_true):
             if not code:

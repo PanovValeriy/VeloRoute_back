@@ -110,3 +110,16 @@ class EventListSerializer(ModelSerializer):
     def get_viewsCount(self, obj):
         # obj — это уже экземпляр Report с аннотированным полем views_count
         return getattr(obj, 'viewsCount', 0)
+
+class InfoListSerializer(ModelSerializer):
+    class Meta:
+        model = Info
+        fields = ('id', 'name', 'body', 'priority', 'dateCreate', 'dateUpdate')
+
+    def get_viewsCount(self, obj):
+        return getattr(obj, 'viewsCount', 0)
+
+class InfoSerializer(ModelSerializer):
+    class Meta:
+        model = Info
+        fields = '__all__'

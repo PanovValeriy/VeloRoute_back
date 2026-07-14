@@ -5,11 +5,11 @@ import operator
 from django.db.models import Q, OuterRef, Subquery, IntegerField, Sum
 from core.constants import STATUS_PUBLIC
 from core.libs import ip2int
-from core.models import Route, Report, Event, VisitCount, ViewCount
+from core.models import Route, Report, Event, VisitCount, ViewCount, Info
 
 
 def replaceTags(content):
-    tagList = ['ROUTE', 'REPORT', 'EVENT']
+    tagList = ['ROUTE', 'REPORT', 'EVENT', 'INFO']
     for tag in tagList:
         startTag = f'[{tag}]'
         endTag = f'[/{tag}]'
@@ -28,6 +28,9 @@ def replaceTags(content):
             if tag == 'EVENT':
                 record = readEvent(id)
                 result['url'] = 'event'
+            if tag == 'INFO':
+                record = readInfo(id)
+                result['url'] = 'info'
             if record:
                 result['name'] = record.name
                 result['id'] = record.id
@@ -189,6 +192,19 @@ def readEvent(id):
         result = None
     return result
 
+def readInfoList():
+    q = Q(status=STATUS_PUBLIC)
+    result = Info.objects.filter(q)
+    return result
+
+def readInfo(id):
+    try:
+        result = Info.objects.get(pk=id)
+        if result.status < 2:
+            result = None
+    except:
+        result = None
+    return result
 
 def readNewsList(count=5, operation=0, showEventArchive=False):
 

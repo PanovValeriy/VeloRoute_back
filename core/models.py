@@ -151,3 +151,19 @@ class ViewCount(models.Model):
     class Meta:
         verbose_name = 'Просмотр'
         verbose_name_plural = 'Просмотры'
+
+class Info(models.Model):
+    name = models.CharField(max_length=150, verbose_name='Название')
+    body = models.TextField(verbose_name='Содержимое сообщения')
+    priority = models.IntegerField(verbose_name='Приоритет')
+    dateCreate = models.DateField(verbose_name='Дата создания сообщения')
+    dateUpdate = models.DateField(verbose_name='Дата обновления сообщения')
+    status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус сообщения')
+
+    def __str__(self):
+        return '{}: {} ({})'.format(self.id, self.name, STATUS_LIST[self.status])
+
+    class Meta:
+        ordering = ('-priority', '-dateCreate')
+        verbose_name = 'Информационное сообщение'
+        verbose_name_plural = 'Информационные сообщения'

@@ -33,8 +33,8 @@ def view_event(request, pk):
     event = readEvent(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 3)
-    event.description = replaceTags(event.description)
     if event:
+        event.description = replaceTags(event.description)
         responseEvent = EventSerializer(event).data
         if event.status == STATUS_PUBLIC or (event.status == STATUS_HIDE and code == code_true):
             if not code:

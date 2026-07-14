@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/report/', include('report.urls')),
     path('api/event/', include('event.urls')),
     path('api/news/', include('news.urls')),
+    path('api/info/', include('info.urls')),
     path('admin/', admin.site.urls),
     re_path(r'[.]*', core.views.index)
 ]

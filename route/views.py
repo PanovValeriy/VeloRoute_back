@@ -36,8 +36,8 @@ def view_route(request, pk):
     route = readRoute(pk)
     code = request.GET.get('code', '')
     code_true = calcCodeTrue(pk, 1)
-    route.description = replaceTags(route.description)
     if route:
+        route.description = replaceTags(route.description)
         responseRoute = RouteSerializer(route).data
         if route.status == STATUS_PUBLIC or (route.status == STATUS_HIDE and code == code_true):
             if not code:
