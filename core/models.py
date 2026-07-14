@@ -97,6 +97,7 @@ class Event(models.Model):
     dateCreate = models.DateField(verbose_name='Дата создания события')
     dateUpdate = models.DateField(verbose_name='Дата обновления события')
     status = models.PositiveSmallIntegerField(default=0, verbose_name='Статус события')
+    miniReport = models.TextField(verbose_name='Миниотчет', blank=True, null=True)
 
     def __str__(self):
         return '{}: {} ({}) ({})'.format(self.id, self.name, self.startDateTime.date(), STATUS_LIST[self.status])

@@ -102,14 +102,19 @@ class EventListSerializer(ModelSerializer):
     tempo = TempoSerializer()
     complexity = ComplexitySerializer()
     viewsCount = SerializerMethodField()
+    miniReportTrue = SerializerMethodField()
 
     class Meta:
         model = Event
-        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL', 'dateCreate', 'dateUpdate', 'viewsCount')
+        fields = ('id', 'author', 'name', 'typeEvent', 'length', 'tempo', 'startDateTime', 'startPlace', 'complexity', 'photoURL', 'dateCreate', 'dateUpdate', 'viewsCount', 'miniReportTrue')
 
     def get_viewsCount(self, obj):
         # obj — это уже экземпляр Report с аннотированным полем views_count
         return getattr(obj, 'viewsCount', 0)
+
+    def get_miniReportTrue(self, obj):
+        # getattr(obj, 'miniReport', '')
+        return bool(getattr(obj, 'miniReport', ''))
 
 class InfoListSerializer(ModelSerializer):
     class Meta:
