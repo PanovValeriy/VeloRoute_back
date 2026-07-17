@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_ROUTE
-from core.crud import readRouteList, readRoute, addView, replaceTags
+from core.crud import readRouteList, readRoute, addView, replaceTags, readRouteListRandom
 from core.libs import calcCodeTrue
 from core.serializers import RouteListSerializer, RouteSerializer
 
@@ -44,3 +44,10 @@ def view_route(request, pk):
                 addView(MODULE_ROUTE, route.id)
             return Response(responseRoute, status=status.HTTP_200_OK)
     return Response({'error': 'Маршрут не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def view_route_list_random(request, count):
+    routeList = readRouteListRandom(count)
+    responseRouteList = RouteListSerializer(routeList, many=True).data
+    return Response({'recCount': routeList.count(), 'routeList': responseRouteList}, status=status.HTTP_200_OK)

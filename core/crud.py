@@ -1,5 +1,5 @@
 import datetime
-
+import random
 from django.utils import timezone
 import operator
 from django.db.models import Q, OuterRef, Subquery, IntegerField, Sum
@@ -83,6 +83,19 @@ def readRouteList(search='', length='', complexity=0, sort=''):
     return result
 
 
+def readRouteListRandom(count=3):
+    # Фильтр по статусу
+    q = Q(status=STATUS_PUBLIC)
+
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=1, idPage=OuterRef('id'))
+        .values('count')
+    )
+    result = Route.objects.filter(q).order_by('?')[:count].annotate(viewsCount=Subquery(views_subquery, output_field=IntegerField()))
+    return result
+
+
 def readRoute(id):
     try:
         result = Route.objects.get(pk=id)
@@ -130,6 +143,19 @@ def readReportList(search='', sort='', routeId=0, eventId=0):
     result = Report.objects.filter(q).order_by(order).annotate(
         viewsCount=Subquery(views_subquery, output_field=IntegerField())
     )
+    return result
+
+
+def readReportListRandom(count=3):
+    # Фильтр по статусу
+    q = Q(status=STATUS_PUBLIC)
+
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=2, idPage=OuterRef('id'))
+        .values('count')
+    )
+    result = Report.objects.filter(q).order_by('?')[:count].annotate(viewsCount=Subquery(views_subquery, output_field=IntegerField()))
     return result
 
 
@@ -192,10 +218,32 @@ def readEvent(id):
         result = None
     return result
 
+
+def readEventFirst():
+    # Фильтр по статусу
+    q = Q(status=STATUS_PUBLIC)
+    # Фильтр по активности
+    q &= Q(startDateTime__gte=timezone.now())
+
+    views_subquery = (
+        ViewCount.objects
+        .filter(typeModule=3, idPage=OuterRef('id'))
+        .values('count')
+    )
+
+    eventList = Event.objects.filter(q).order_by('startDateTime')[:1].annotate(
+        viewsCount=Subquery(views_subquery, output_field=IntegerField())
+    )
+    if eventList.count() == 0:
+        return None
+    return eventList[0]
+
+
 def readInfoList():
     q = Q(status=STATUS_PUBLIC)
     result = Info.objects.filter(q)
     return result
+
 
 def readInfo(id):
     try:
@@ -205,6 +253,7 @@ def readInfo(id):
     except:
         result = None
     return result
+
 
 def readNewsList(count=5, operation=0, showEventArchive=False):
 

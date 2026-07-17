@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_REPORT
-from core.crud import readReportList, readReport, addView, replaceTags
+from core.crud import readReportList, readReport, addView, replaceTags, readReportListRandom
 from core.libs import calcCodeTrue
 from core.serializers import ReportListSerializer, ReportSerializer
 
@@ -42,3 +42,9 @@ def view_report(request, pk):
                 addView(MODULE_REPORT, report.id)
             return Response(responseReport, status=status.HTTP_200_OK)
     return Response({'error': 'Отчет не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def view_report_list_random(request, count):
+    reportList = readReportListRandom(count)
+    responseReportList = ReportListSerializer(reportList, many=True).data
+    return Response({'recCount': reportList.count(), 'reportList': responseReportList}, status=status.HTTP_200_OK)

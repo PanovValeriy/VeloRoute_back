@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.constants import STATUS_PUBLIC, STATUS_HIDE, MODULE_EVENT
-from core.crud import readEventList, readEvent, addView, replaceTags
+from core.crud import readEventList, readEvent, addView, replaceTags, readEventFirst
 from core.libs import calcCodeTrue
 from core.serializers import EventListSerializer, EventSerializer
 
@@ -41,3 +41,12 @@ def view_event(request, pk):
                 addView(MODULE_EVENT, event.id)
             return Response(responseEvent, status=status.HTTP_200_OK)
     return Response({'error': 'Событие не найдено'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def view_event_first(request):
+    event = readEventFirst()
+    if event == None:
+        return Response({'error': 'Событие не найдено'}, status=status.HTTP_404_NOT_FOUND)
+    responseEvent = EventListSerializer(event).data
+    return Response(responseEvent, status = status.HTTP_200_OK)
