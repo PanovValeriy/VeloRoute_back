@@ -1,5 +1,6 @@
 from django.contrib import admin
-from core.models import Author, TypeEvent, Tempo, Complexity, Route, Event, Report, VisitCount, ViewCount, Info
+from core.models import Author, TypeEvent, Tempo, Complexity, Route, Event, Report, VisitCount, ViewCount, Info, Likes, \
+    Members
 
 admin.site.register(Author)
 admin.site.register(TypeEvent)
@@ -11,3 +12,5 @@ admin.site.register(Report)
 admin.site.register(VisitCount)
 admin.site.register(ViewCount)
 admin.site.register(Info)
+admin.site.register(Likes)
+admin.site.register(Members)

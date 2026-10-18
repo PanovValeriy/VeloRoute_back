@@ -4,6 +4,7 @@ import core.views
 
 urlpatterns = [
     path('', core.views.index),
+    path('api/user/', include('user.urls')),
     path('api/route/', include('route.urls')),
     path('api/report/', include('report.urls')),
     path('api/event/', include('event.urls')),

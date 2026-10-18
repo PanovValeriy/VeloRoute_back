@@ -1,11 +1,55 @@
 import datetime
-import random
+from django.db.models.fields import BooleanField
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 import operator
-from django.db.models import Q, OuterRef, Subquery, IntegerField, Sum
-from core.constants import STATUS_PUBLIC
+from django.db.models import Q, OuterRef, Subquery, IntegerField, Count, Value, Exists
+from core.constants import STATUS_PUBLIC, MODULE_ROUTE, MODULE_REPORT, MODULE_EVENT, STATUS_HIDE
 from core.libs import ip2int
-from core.models import Route, Report, Event, VisitCount, ViewCount, Info
+from core.models import Route, Report, Event, VisitCount, ViewCount, Info, Likes, Members
+from user.models import User
+
+
+def get_subquery_viewsCount(typeModule):
+    return (
+        ViewCount.objects
+        .filter(typeModule=typeModule, idPage=OuterRef('pk'))
+        .values('count')
+    )
+
+
+def get_subquery_likesCount(typeContent):
+    return (
+        Likes.objects
+        .filter(typeContent=typeContent, idContent=OuterRef('pk'))
+        .values('idContent')
+        .annotate(count=Count('*'))
+        .values('count')
+    )
+
+
+def get_subquery_like(typeContent, idUser):
+    return (
+        Likes.objects
+        .filter(typeContent=typeContent, idContent=OuterRef('pk'), user_id=idUser)
+    )
+
+
+def get_subquery_membersCount():
+    return (
+        Members.objects
+        .filter(event_id=OuterRef('pk'))
+        .values('event_id')
+        .annotate(count=Count('*'))
+        .values('count')
+    )
+
+
+def get_subquery_member(idUser):
+    return (
+        Members.objects
+        .filter(event_id=OuterRef('pk'), user_id=idUser)
+    )
 
 
 def replaceTags(content):
@@ -39,7 +83,7 @@ def replaceTags(content):
     return content
 
 
-def readRouteList(search='', length='', complexity=0, sort=''):
+def readRouteList(search='', length='', complexity=0, sort='', idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
     # Фильтр по тексту
@@ -72,41 +116,52 @@ def readRouteList(search='', length='', complexity=0, sort=''):
             order = '-' + order
     if order == '':
         order = 'name'
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=1, idPage=OuterRef('id'))
-        .values('count')
-    )
-    result = Route.objects.filter(q).order_by(order).annotate(
-        viewsCount=Subquery(views_subquery, output_field=IntegerField())
-    )
+
+    result = (Route.objects.filter(q).order_by(order)
+        .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+        .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+        )
+
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_ROUTE, idUser), output_field=BooleanField()))
+
     return result
 
 
-def readRouteListRandom(count=3):
+def readRouteListRandom(count=3, idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
 
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=1, idPage=OuterRef('id'))
-        .values('count')
-    )
-    result = Route.objects.filter(q).order_by('?')[:count].annotate(viewsCount=Subquery(views_subquery, output_field=IntegerField()))
+    result = (Route.objects.filter(q).order_by('?')[:count]
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+              )
+
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_ROUTE, idUser), output_field=BooleanField()))
+
     return result
 
 
-def readRoute(id):
-    try:
-        result = Route.objects.get(pk=id)
-        if result.status < 2:
-            result = None
-    except:
-        result = None
-    return result
+def readRoute(id, idUser=0):
+    result = Route.objects.filter(pk=id)
+    if len(result) == 0:
+        return None
+    elif result[0].status < STATUS_HIDE:
+        return None
+
+    result = (result
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_ROUTE), output_field=IntegerField()), Value(0)))
+            )
+
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_ROUTE, idUser), output_field=BooleanField()))
+
+    return result[0]
 
 
-def readReportList(search='', sort='', routeId=0, eventId=0):
+def readReportList(search='', sort='', routeId=0, eventId=0, idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
     # Фильтр по тексту
@@ -134,42 +189,51 @@ def readReportList(search='', sort='', routeId=0, eventId=0):
     if order == '':
         order = 'name'
 
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=2, idPage=OuterRef('id'))
-        .values('count')
-    )
+    result = (Report.objects.filter(q).order_by(order)
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+              )
 
-    result = Report.objects.filter(q).order_by(order).annotate(
-        viewsCount=Subquery(views_subquery, output_field=IntegerField())
-    )
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_REPORT, idUser), output_field=BooleanField()))
+
     return result
 
 
-def readReportListRandom(count=3):
+def readReportListRandom(count=3, idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
 
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=2, idPage=OuterRef('id'))
-        .values('count')
-    )
-    result = Report.objects.filter(q).order_by('?')[:count].annotate(viewsCount=Subquery(views_subquery, output_field=IntegerField()))
+    result = (Report.objects.filter(q).order_by('?')[:count]
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+              )
+
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_REPORT, idUser), output_field=BooleanField()))
+
     return result
 
 
-def readReport(id):
-    try:
-        result = Report.objects.get(pk=id)
-        if result.status < 2:
-            result = None
-    except:
-        result = None
-    return result
+def readReport(id, idUser=0):
+    result = Report.objects.filter(pk=id)
+    if len(result) == 0:
+        return None
+    elif result[0].status < STATUS_HIDE:
+        return None
+
+    result = (result
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_REPORT), output_field=IntegerField()), Value(0)))
+            )
+
+    if idUser != 0:
+        result = result.annotate(like=Exists(get_subquery_like(MODULE_REPORT, idUser), output_field=BooleanField()))
+
+    return result[0]
 
 
-def readEventList(search='', hideArchive=False, sort='', routeId=0):
+def readEventList(search='', hideArchive=False, sort='', routeId=0, idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
     # Фильтр по строке
@@ -197,46 +261,68 @@ def readEventList(search='', hideArchive=False, sort='', routeId=0):
     if order == '':
         order = '-startDateTime'
 
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=3, idPage=OuterRef('id'))
-        .values('count')
-    )
+    result = (Event.objects.filter(q).order_by(order)
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(membersCount=Coalesce(Subquery(get_subquery_membersCount(), output_field=IntegerField()), Value(0)))
+              )
 
-    result = Event.objects.filter(q).order_by(order).annotate(
-        viewsCount=Subquery(views_subquery, output_field=IntegerField())
-    )
+    if idUser != 0:
+        result = (result
+                  .annotate(like=Exists(get_subquery_like(MODULE_EVENT, idUser), output_field=BooleanField()))
+                  .annotate(member=Exists(get_subquery_member(idUser), output_field=BooleanField()))
+                  )
+
     return result
 
 
-def readEvent(id):
-    try:
-        result = Event.objects.get(pk=id)
-        if result.status < 2:
-            result = None
-    except:
-        result = None
-    return result
+def readEvent(id, idUser=0):
+
+    result = Event.objects.filter(pk=id)
+    if len(result) == 0:
+        return None
+    elif result[0].status < 2:
+        return None
+
+    result = (result
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(membersCount=Coalesce(Subquery(get_subquery_membersCount(), output_field=IntegerField()), Value(0)))
+            )
+
+    if idUser != 0:
+        result = (result
+                  .annotate(like=Exists(get_subquery_like(MODULE_EVENT, idUser), output_field=BooleanField()))
+                  .annotate(member=Exists(get_subquery_member(idUser), output_field=BooleanField()))
+                  )
+
+    return result[0]
 
 
-def readEventFirst():
+
+def readEventFirst(idUser=0):
     # Фильтр по статусу
     q = Q(status=STATUS_PUBLIC)
     # Фильтр по активности
     q &= Q(startDateTime__gte=timezone.now())
 
-    views_subquery = (
-        ViewCount.objects
-        .filter(typeModule=3, idPage=OuterRef('id'))
-        .values('count')
-    )
-
-    eventList = Event.objects.filter(q).order_by('startDateTime')[:1].annotate(
-        viewsCount=Subquery(views_subquery, output_field=IntegerField())
-    )
-    if eventList.count() == 0:
+    result = Event.objects.filter(q).order_by('startDateTime')[:1]
+    if result.count() == 0:
         return None
-    return eventList[0]
+
+    result = (result
+              .annotate(viewsCount=Coalesce(Subquery(get_subquery_viewsCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(likesCount=Coalesce(Subquery(get_subquery_likesCount(MODULE_EVENT), output_field=IntegerField()), Value(0)))
+              .annotate(membersCount=Coalesce(Subquery(get_subquery_membersCount(), output_field=IntegerField()), Value(0)))
+            )
+
+    if idUser != 0:
+        result = (result
+                  .annotate(like=Exists(get_subquery_like(MODULE_EVENT, idUser), output_field=BooleanField()))
+                  .annotate(member=Exists(get_subquery_member(idUser), output_field=BooleanField()))
+                  )
+
+    return result[0]
 
 
 def readInfoList():
@@ -406,3 +492,68 @@ def addView(typeModule, idPage=0):
     except:
         recViewCount = ViewCount(typeModule=typeModule, idPage=idPage, count=1)
         recViewCount.save()
+
+def like_toggle(typeContent, idContent, idUser):
+    try:
+        user = User.objects.get(id=idUser)
+        if typeContent == MODULE_ROUTE:
+            content = Route.objects.get(id=idContent)
+        elif typeContent == MODULE_REPORT:
+            content = Report.objects.get(id=idContent)
+        elif typeContent == MODULE_EVENT:
+            content = Event.objects.get(id=idContent)
+        else:
+            return {
+                    'status': 'error',
+                    'message': 'Указан несуществующий контент'
+                    }
+    except:
+        return {
+            'status': 'error',
+            'message': 'Пользователь не найден' if user is None else 'Контент не найден'
+        }
+    likes = Likes.objects.filter(typeContent=typeContent, idContent=content.id, user=user)
+    if len(likes) > 0:
+        likes[0].delete()
+        return {
+            'status': 'success',
+            'message': 'Лайк удален'
+        }
+    else:
+        like = Likes(typeContent=typeContent, idContent=content.id, user=user)
+        like.save()
+    return {
+        'status': 'success',
+        'message': 'Лайк установлен'
+    }
+
+
+def event_member_toggle(idEvent, idUser):
+    try:
+        user = User.objects.get(id=idUser)
+    except:
+        return {
+            'status': 'error',
+            'message': 'Пользователь не найден'
+        }
+    try:
+        event = Event.objects.get(id=idEvent)
+    except:
+        return {
+            'status': 'error',
+            'message': 'Событие не найдено'
+        }
+    members = Members.objects.filter(event=event, user=user)
+    if len(members) > 0:
+        members[0].delete()
+        return {
+            'status': 'success',
+            'message': 'Пользователь удален из списка участников',
+        }
+    else:
+        member = Members(event=event, user=user)
+        member.save()
+        return {
+            'status': 'success',
+            'message': 'Пользователь добавлен в список участников',
+        }

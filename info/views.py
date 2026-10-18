@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -9,6 +10,7 @@ from core.crud import readInfoList, readInfo, replaceTags
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def view_info_list(request):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 0))
@@ -24,6 +26,7 @@ def view_info_list(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def view_info(request, pk):
     info = readInfo(pk)
     code = request.GET.get('code', '')

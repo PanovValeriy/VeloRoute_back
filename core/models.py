@@ -1,7 +1,7 @@
 from django.db import models
 import datetime
-from core.constants import STATUS_LIST
-
+from core.constants import STATUS_LIST, MODULE_ROUTE, MODULE_REPORT, MODULE_EVENT, MODULE_LIST
+from user.models import User
 
 class TypeEvent(models.Model):
     name = models.CharField(max_length=25, verbose_name='Название')
@@ -168,3 +168,37 @@ class Info(models.Model):
         ordering = ('-priority', '-dateCreate')
         verbose_name = 'Информационное сообщение'
         verbose_name_plural = 'Информационные сообщения'
+
+
+class Likes(models.Model):
+    TYPE_CONTENT_CHOICES = [
+        (MODULE_ROUTE, MODULE_LIST[MODULE_ROUTE]),
+        (MODULE_REPORT, MODULE_LIST[MODULE_REPORT]),
+        (MODULE_EVENT, MODULE_LIST[MODULE_EVENT]),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Пользователь')
+    typeContent = models.PositiveSmallIntegerField(choices=TYPE_CONTENT_CHOICES, verbose_name='Тип контента')
+    idContent = models.IntegerField(verbose_name='Идентификатор контента')
+    dateCreate = models.DateField(auto_now_add=True, verbose_name='Дата установки лайка')
+
+    def __str__(self):
+        return '{}: {} ({})'.format(self.id, self.user, self.typeContent, self.idContent)
+
+    class Meta:
+        ordering = ('-dateCreate',)
+        verbose_name = 'Лайк'
+        verbose_name_plural = 'Лайки'
+
+class Members(models.Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='Пользователь')
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, verbose_name='Событие')
+    dateCreate = models.DateField(auto_now_add=True, verbose_name='Дата записи на событие')
+
+    def __str__(self):
+        return '{}: {} ({})'.format(self.id, self.user, self.event)
+
+    class Meta:
+        ordering = ('-dateCreate',)
+        verbose_name = 'Участник'
+        verbose_name_plural = 'Участники'

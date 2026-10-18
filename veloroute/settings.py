@@ -55,10 +55,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'core',
     'route',
     'report',
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +161,31 @@ CORS_ORIGIN_WHITELIST = (
        'http://localhost',
        'http://192.168.0.101'
 )
+
+CSRF_TRUSTED_ORIGINS = (
+    'http://localhost:3000',
+    'http://192.168.0.101:3000',
+    'http://localhost',
+    'http://192.168.0.101',
+)
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
+    ],
+}
+
+# Token Authentication
+TOKEN_EXPIRE_TIME = 60 * 60  # 1 час
+TOKEN_REFRESH_EXPIRE_TIME = 7 * 24 * 60 * 60  # 7 дней
