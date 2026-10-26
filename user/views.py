@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from core.constants import USER_STATUS_ACTIVE
+from core.constants import USER_STATUS_ACTIVE, USER_STATUS_INACTIVE, USER_STATUS_REGISTER
 from user.crud import registerUser, findUserLogin, cancelRegisterUser, checkUserStatus
 from user.serializers import UserDetailSerializer
 from rest_framework.authtoken.models import Token
@@ -70,22 +70,26 @@ def view_login(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    if result['user'].status == 1:
+    if result['user'].status == USER_STATUS_INACTIVE:
         return Response(
             {
                 'detail': 'Ваш аккаунт заблокирован'
             },
-            status=status.HTTP_403_FORBIDDEN
+            status=status.HTTP_401_UNAUTHORIZED
         )
-
-    if result['user'].status == 2:
+    elif result['user'].status == USER_STATUS_REGISTER:
         return Response(
             {
                 'detail': 'Ваш аккаунт ожидает подтверждения'
             },
-            status=status.HTTP_403_FORBIDDEN
+            status=status.HTTP_401_UNAUTHORIZED
         )
-
+    elif result['user'].status != USER_STATUS_ACTIVE:
+        return Response({
+                'detail': 'Неизвестная ошибка авторизации'
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     user_auth = authenticate(request, username=login, password=password)
     if user_auth:
         token, created = Token.objects.get_or_create(user=user_auth)
