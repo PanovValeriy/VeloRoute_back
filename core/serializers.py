@@ -67,11 +67,14 @@ class RouteListSerializer(ModelSerializer):
 
 
 class MemberSerializer(ModelSerializer):
-    user = UserNickNameSerializer()
+    nickName = SerializerMethodField()
 
     class Meta:
         model = Members
-        fields = ('user',)
+        fields = ('nickName',)
+
+    def get_nickName(self, obj):
+        return obj.user.nickName
 
 
 class EventSerializer(ModelSerializer):

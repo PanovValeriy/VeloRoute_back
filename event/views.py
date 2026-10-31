@@ -53,6 +53,7 @@ def view_event(request, pk):
     if event:
         event.description = replaceTags(event.description)
         responseEvent = EventSerializer(event).data if idUser != 0 else EventNotAuthSerializer(event).data
+        responseEvent['members_set'] = list(map(lambda item: item['nickName'], responseEvent['members_set']))
         if event.status == STATUS_PUBLIC or (event.status == STATUS_HIDE and code == code_true):
             if not code:
                 addView(MODULE_EVENT, event.id)
