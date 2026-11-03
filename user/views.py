@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.constants import USER_STATUS_ACTIVE, USER_STATUS_INACTIVE, USER_STATUS_REGISTER
-from user.crud import registerUser, findUserLogin, cancelRegisterUser, checkUserStatus
+from user.crud import registerUser, findUserLogin, cancelRegisterUser, checkUserStatus, changeUserPassword
 from user.serializers import UserDetailSerializer
 from rest_framework.authtoken.models import Token
 
@@ -122,7 +122,7 @@ def view_logout(request):
         status=status.HTTP_200_OK
     )
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_profile(request):
     loginUser = checkUserStatus(request.user.username)
@@ -131,9 +131,8 @@ def view_profile(request):
             {'detail': loginUser['message']},
             status=status.HTTP_401_UNAUTHORIZED
         )
-    result = findUserLogin(request.user.username)
-    if result['status'] == 'success':
-        serializer = UserDetailSerializer(result['user'])
+    if loginUser['status'] == 'success':
+        serializer = UserDetailSerializer(loginUser['user'])
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
@@ -143,3 +142,28 @@ def view_profile(request):
             {'detail': 'Пользователь не найден'},
             status=status.HTTP_401_UNAUTHORIZED,
         )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def view_change_password(request):
+    login = request.user.username
+    password_old = request.data.get('passwordOld', '').strip()
+    password_new = request.data.get('passwordNew', '').strip()
+    if not password_old or not password_new:
+        return Response(
+            {'detail': 'Пароль не может быть пустыми'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    loginUser = checkUserStatus(login)
+    if loginUser['status'] == 'error':
+        return Response(
+            {'detail': loginUser['message']},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    result = changeUserPassword(login, password_old, password_new)
+    if result['status'] == 'error':
+        return Response(
+            {'detail': result['message']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    return Response({'detail': result['message']}, status=status.HTTP_200_OK)

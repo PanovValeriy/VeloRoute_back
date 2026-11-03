@@ -1,5 +1,6 @@
 from core.constants import USER_STATUS_REGISTER, USER_STATUS_ACTIVE, USER_STATUS_INACTIVE
 from user.models import User
+from django.contrib.auth.models import User as AuthUser
 
 def registerUser(login, password, firstName, lastName, nickName):
     if not login or not password:
@@ -151,3 +152,34 @@ def checkUserStatus(login):
             'status': 'error',
             'message': 'Пользователь не найден'
         }
+
+def changeUserPassword(login, password_old=None, password_new=None):
+    result = checkUserStatus(login)
+    if result['status'] == 'error':
+        return {
+            'status': 'error',
+            'message': result['message']
+        }
+    user = result['user']
+    if not user.checkPassword(password_old):
+        return {
+            'status': 'error',
+            'message': 'Старый пароль неверный'
+        }
+    try:
+        authUser = AuthUser.objects.get(username=login)
+        authUser.set_password(password_new)
+        authUser.save()
+        user.setPassword(password_new)
+        user.save()
+        return {
+            'status': 'success',
+            'message': 'Пароль успешно изменен'
+        }
+    except:
+        return {
+            'status': 'error',
+            'message': 'Ошибка изменения пароля'
+        }
+
+
