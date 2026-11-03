@@ -9,12 +9,22 @@ def registerUser(login, password, firstName, lastName, nickName):
                 'status': 'error',
                 'message': 'Укажите логин и пароль'
                 }
-    if User.objects.filter(login=login).exists():
+    if User.objects.filter(login=login).exists() or AuthUser.objects.filter(username=login).exists():
         return {
                 'user': None,
                 'status': 'error',
                 'message': 'Логин уже занят'
                 }
+    authUser = AuthUser(
+        username=login,
+        first_name=firstName,
+        last_name=lastName,
+        is_staff=False,
+        is_active=False,
+        is_superuser=False,
+    )
+    authUser.set_password(password)
+    authUser.save()
     user = User(
         login=login,
         firstName=firstName,
